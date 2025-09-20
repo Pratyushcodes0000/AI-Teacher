@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { BookOpen, Upload, MessageSquare, FileText, Brain, AlertCircle, Menu, X, Zap, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { BookOpen, Upload, MessageSquare, FileText, Brain, AlertCircle } from 'lucide-react';
 
 import { DocumentUploader } from './components/DocumentUploader';
 import { ChatInterface } from './components/ChatInterface';
@@ -14,7 +13,7 @@ import { KeyboardShortcuts } from './components/KeyboardShortcuts';
 import { DynamicFAQ } from './components/DynamicFAQ';
 
 import { Button } from './components/ui/button';
-import { Card, CardContent } from './components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Alert, AlertDescription } from './components/ui/alert';
@@ -57,7 +56,6 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentTab, setCurrentTab] = useState('upload');
   const [error, setError] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -442,99 +440,47 @@ export default function App() {
 
   if (authState.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block"
-          >
-            <Brain className="h-12 w-12 text-primary mx-auto mb-4" />
-          </motion.div>
-          <motion.p 
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-muted-foreground"
-          >
-            Loading...
-          </motion.p>
-        </motion.div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Brain className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!authState.isAuthenticated) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5"
-      >
-        <AuthForm onSignIn={handleSignIn} onSignUp={handleSignUp} />
-      </motion.div>
-    );
+    return <AuthForm onSignIn={handleSignIn} onSignUp={handleSignUp} />;
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Enhanced Header */}
-      <motion.header 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="border-b bg-card/80 backdrop-blur-xl supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50"
-      >
+    <div className="h-screen flex flex-col">
+      {/* Header */}
+      <header className="border-b bg-card">
         <div className="flex items-center justify-between p-4">
-          <motion.div 
-            className="flex items-center gap-3"
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="flex items-center gap-3">
-              <motion.div 
-                className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg"
-                whileHover={{ rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <Brain className="h-5 w-5 text-primary-foreground" />
-              </motion.div>
-              <div>
-                <h1 className="text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                  Academic Assistant
-                </h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  AI-powered study companion
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <Brain className="h-4 w-4 text-primary-foreground" />
             </div>
-          </motion.div>
+            <div>
+              <h1 className="font-semibold">Academic Assistant</h1>
+              <p className="text-sm text-muted-foreground">AI-powered study companion</p>
+            </div>
+          </div>
           
           <div className="flex items-center gap-3">
-            <motion.div 
-              className="flex items-center gap-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Badge variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 transition-colors">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="flex items-center gap-1">
                 <FileText className="h-3 w-3" />
                 {documents.length}
               </Badge>
-              <Badge variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 transition-colors">
+              <Badge variant="secondary" className="flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
                 {messages.filter(m => m.type === 'user').length}
               </Badge>
-            </motion.div>
+            </div>
             
-            <motion.div 
-              className="flex items-center gap-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
+            <div className="flex items-center gap-2">
               <ExportChatButton messages={messages} />
               <KeyboardShortcuts 
                 onSwitchToChat={() => setCurrentTab('chat')}
@@ -551,47 +497,37 @@ export default function App() {
               {authState.user && (
                 <UserMenu user={authState.user} onSignOut={handleSignOut} />
               )}
-            </motion.div>
+            </div>
           </div>
         </div>
         
-        <AnimatePresence>
-          {error && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="px-4 pb-4"
-            >
-              <Alert variant="destructive" className="border-destructive/20 bg-destructive/5">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+        {error && (
+          <div className="px-4 pb-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+      </header>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
-        <motion.div 
-          className="flex-1 flex flex-col"
-          layout
-        >
+        <div className="flex-1 flex flex-col">
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="h-full flex flex-col">
-            {/* Enhanced Tab Navigation */}
-            <div className="border-b bg-card/50 backdrop-blur-sm">
+            {/* Tab Navigation */}
+            <div className="border-b">
               <div className="px-6 py-2">
-                <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/30 backdrop-blur-sm">
-                  <TabsTrigger value="upload" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                <TabsList className="grid w-full max-w-md grid-cols-3">
+                  <TabsTrigger value="upload" className="flex items-center gap-2">
                     <Upload className="h-4 w-4" />
                     <span className="hidden sm:inline">Upload</span>
                   </TabsTrigger>
-                  <TabsTrigger value="chat" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                  <TabsTrigger value="chat" className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
                     <span className="hidden sm:inline">Chat</span>
                   </TabsTrigger>
-                  <TabsTrigger value="documents" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                  <TabsTrigger value="documents" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
                     <span className="hidden sm:inline">Documents</span>
                   </TabsTrigger>
@@ -599,226 +535,107 @@ export default function App() {
               </div>
             </div>
 
-            {/* Enhanced Tab Content */}
-            <div className="flex-1 relative">
-              <AnimatePresence mode="wait">
-                <TabsContent 
-                  value="upload" 
-                  className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
-                >
-                  <motion.div
-                    key="upload"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="h-full flex flex-col"
-                  >
-                    <div className="flex-1 p-8">
-                      <div className="max-w-3xl mx-auto">
-                        <motion.div 
-                          className="text-center mb-12"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                        >
-                          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
-                            <Zap className="h-4 w-4" />
-                            <span className="text-sm font-medium">Powered by Advanced AI</span>
-                          </div>
-                          <h2 className="text-3xl font-semibold mb-4 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                            Upload Your Research Documents
-                          </h2>
-                          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                            Upload PDF files to start asking questions and getting insights from your academic materials with our intelligent AI assistant.
-                          </p>
-                        </motion.div>
-                        
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          <DocumentUploader
-                            documents={documents}
-                            onUpload={handleUpload}
-                            onRemove={handleRemoveDocument}
-                          />
-                        </motion.div>
-                      </div>
+            {/* Tab Content */}
+            <div className="flex-1 overflow-hidden">
+              <TabsContent value="upload" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <div className="flex-1 p-8">
+                  <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-8">
+                      <h2 className="text-2xl font-semibold mb-4">Upload Your Research Documents</h2>
+                      <p className="text-muted-foreground max-w-2xl mx-auto">
+                        Upload PDF files to start asking questions and getting insights from your academic materials.
+                      </p>
                     </div>
-                  </motion.div>
-                </TabsContent>
-
-                <TabsContent 
-                  value="chat" 
-                  className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
-                >
-                  <motion.div
-                    key="chat"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="h-full"
-                  >
-                    <ChatInterface
-                      messages={messages}
-                      onSendMessage={handleSendMessage}
-                      isProcessing={isProcessing}
-                      hasDocuments={documents.length > 0}
-                    />
-                  </motion.div>
-                </TabsContent>
-
-                <TabsContent 
-                  value="documents" 
-                  className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
-                >
-                  <motion.div
-                    key="documents"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3 }}
-                    className="h-full"
-                  >
-                    <DocumentViewer
+                    
+                    <DocumentUploader
                       documents={documents}
-                      selectedDocument={selectedDocument}
-                      onSelectDocument={setSelectedDocument}
+                      onUpload={handleUpload}
+                      onRemove={handleRemoveDocument}
                     />
-                  </motion.div>
-                </TabsContent>
-              </AnimatePresence>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="chat" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <ChatInterface
+                  messages={messages}
+                  onSendMessage={handleSendMessage}
+                  isProcessing={isProcessing}
+                  hasDocuments={documents.length > 0}
+                />
+              </TabsContent>
+
+              <TabsContent value="documents" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <DocumentViewer
+                  documents={documents}
+                  selectedDocument={selectedDocument}
+                  onSelectDocument={setSelectedDocument}
+                />
+              </TabsContent>
             </div>
           </Tabs>
-        </motion.div>
+        </div>
 
-        {/* Enhanced Dynamic Sidebar */}
-        <AnimatePresence>
-          {documents.length > 0 && (
-            <motion.div 
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ 
-                width: sidebarCollapsed ? 60 : 360, 
-                opacity: 1 
-              }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="border-l bg-card/60 backdrop-blur-sm flex flex-col overflow-hidden"
-            >
-              {/* Sidebar Header */}
-              <div className="p-4 border-b bg-card/80">
-                <div className="flex items-center justify-between">
-                  {!sidebarCollapsed && (
-                    <motion.h3 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="font-medium text-sm text-muted-foreground"
-                    >
-                      Workspace
-                    </motion.h3>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    className="h-8 w-8 p-0 hover:bg-accent transition-colors"
-                  >
-                    <motion.div
-                      animate={{ rotate: sidebarCollapsed ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                    </motion.div>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Sidebar Content */}
-              <div className="flex-1 overflow-y-auto">
-                <AnimatePresence>
-                  {!sidebarCollapsed && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      className="p-4 space-y-6"
-                    >
-                      {/* Usage Indicator */}
-                      {authState.user && usageStats && remainingUsage && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                        >
-                          <UsageIndicator
-                            currentUsage={{
-                              documents: usageStats.documentsProcessed,
-                              questions: usageStats.questionsAsked
-                            }}
-                            remaining={remainingUsage}
-                            planType={usageStats.planType}
-                            onUpgradeClick={() => {
-                              setUpgradeTrigger('feature');
-                              setShowUpgradePrompt(true);
-                            }}
-                          />
-                        </motion.div>
-                      )}
-                      
-                      {/* Document Stats */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-sm">
-                          <CardContent className="p-4">
-                            <DocumentStats documents={documents} messages={messages} />
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                      
-                      {/* Dynamic FAQ */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        <DynamicFAQ 
-                          onAskQuestion={(question) => {
-                            setCurrentTab('chat');
-                            handleSendMessage(question);
-                          }}
-                          hasDocuments={readyDocs.length > 0}
-                          documentCount={readyDocs.length}
-                        />
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Sidebar */}
+        {documents.length > 0 && (
+          <div className="w-80 border-l bg-card flex flex-col">
+            <div className="p-4 border-b">
+              <h3 className="font-medium text-sm text-muted-foreground">Workspace</h3>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Usage Indicator */}
+              {authState.user && usageStats && remainingUsage && (
+                <UsageIndicator
+                  currentUsage={{
+                    documents: usageStats.documentsProcessed,
+                    questions: usageStats.questionsAsked
+                  }}
+                  remaining={remainingUsage}
+                  planType={usageStats.planType}
+                  onUpgradeClick={() => {
+                    setUpgradeTrigger('feature');
+                    setShowUpgradePrompt(true);
+                  }}
+                />
+              )}
+              
+              {/* Document Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Document Statistics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DocumentStats documents={documents} messages={messages} />
+                </CardContent>
+              </Card>
+              
+              {/* Dynamic FAQ */}
+              <DynamicFAQ 
+                onAskQuestion={(question) => {
+                  setCurrentTab('chat');
+                  handleSendMessage(question);
+                }}
+                hasDocuments={readyDocs.length > 0}
+                documentCount={readyDocs.length}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Plan Upgrade Prompt */}
-      <AnimatePresence>
-        {showUpgradePrompt && usageStats && remainingUsage && (
-          <PlanUpgradePrompt
-            onUpgrade={handlePlanUpgrade}
-            onClose={() => setShowUpgradePrompt(false)}
-            limitType={upgradeTrigger}
-            currentUsage={{
-              documents: usageStats.documentsProcessed,
-              questions: usageStats.questionsAsked
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {showUpgradePrompt && usageStats && remainingUsage && (
+        <PlanUpgradePrompt
+          onUpgrade={handlePlanUpgrade}
+          onClose={() => setShowUpgradePrompt(false)}
+          limitType={upgradeTrigger}
+          currentUsage={{
+            documents: usageStats.documentsProcessed,
+            questions: usageStats.questionsAsked
+          }}
+        />
+      )}
     </div>
   );
 }

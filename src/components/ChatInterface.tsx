@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, BookOpen, Sparkles, Zap } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Bot, User, BookOpen, Sparkles, Zap, ArrowDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { ScrollArea } from './ui/scroll-area';
 import { Badge } from './ui/badge';
 import { ContextualSuggestions } from './ContextualSuggestions';
 import { faqSystem, type FAQItem } from '../utils/faqSystem';
@@ -31,11 +30,75 @@ export function ChatInterface({ messages, onSendMessage, isProcessing, hasDocume
   const [inputValue, setInputValue] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState<FAQItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
 
+  // Enhanced scroll to bottom with better UX
+  const scrollToBottom = useCallback((force = false) => {
+    if (scrollContainerRef.current && (!isUserScrolling || force)) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+      setShowScrollButton(false);
+    }
+  }, [isUserScrolling]);
+
+  // Auto-scroll when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    // Small delay to ensure DOM is updated
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [messages, scrollToBottom]);
+
+  // Handle scroll detection for the scroll container
+  const handleScrollContainer = useCallback((event: Event) => {
+    const target = event.target as HTMLDivElement;
+    if (target) {
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      
+      setShowScrollButton(!isAtBottom && messages.length > 0);
+      setIsUserScrolling(true);
+      
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsUserScrolling(false);
+        if (isAtBottom) {
+          scrollToBottom();
+        }
+      }, 2000);
+    }
+  }, [messages.length, scrollToBottom]);
+
+  // Set up scroll listener
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScrollContainer);
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScrollContainer);
+      };
+    }
+  }, [handleScrollContainer]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // Load suggested questions based on context
@@ -54,6 +117,9 @@ export function ChatInterface({ messages, onSendMessage, isProcessing, hasDocume
       onSendMessage(inputValue.trim());
       setInputValue('');
       setShowSuggestions(false); // Hide suggestions after first question
+      
+      // Ensure we scroll to bottom after sending
+      setTimeout(() => scrollToBottom(true), 200);
     }
   };
 
@@ -61,6 +127,9 @@ export function ChatInterface({ messages, onSendMessage, isProcessing, hasDocume
     faqSystem.trackQuestion(question);
     onSendMessage(question);
     setShowSuggestions(false);
+    
+    // Ensure we scroll to bottom after sending
+    setTimeout(() => scrollToBottom(true), 200);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -71,10 +140,13 @@ export function ChatInterface({ messages, onSendMessage, isProcessing, hasDocume
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <div className="flex-1 p-4">
-        <ScrollArea className="h-full">
-          <div className="space-y-4">
+        <div 
+          ref={scrollContainerRef}
+          className="h-full overflow-y-auto chat-scroll-area"
+        >
+          <div className="space-y-4 pb-4">
             {messages.length === 0 ? (
               <div className="space-y-6">
                 <div className="text-center py-8">
@@ -212,10 +284,24 @@ export function ChatInterface({ messages, onSendMessage, isProcessing, hasDocume
             
             <div ref={messagesEndRef} />
           </div>
-        </ScrollArea>
+        </div>
       </div>
+
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <div className="absolute bottom-20 right-6 z-10">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => scrollToBottom(true)}
+            className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border bg-background/80 backdrop-blur-sm"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       
-      <div className="border-t p-4">
+      <div className="border-t p-4 bg-background/95 backdrop-blur-sm">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={inputValue}

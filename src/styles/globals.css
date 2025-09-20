@@ -189,114 +189,11 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Enhanced animations and transitions */
+/* Enhanced scrolling */
 @layer utilities {
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
-  }
-
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  .animate-pulse-subtle {
-    animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  @keyframes pulse-subtle {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.8;
-    }
-  }
-
-  .backdrop-blur-xl {
-    backdrop-filter: blur(24px);
-  }
-  
-  .backdrop-blur-sm {
-    backdrop-filter: blur(4px);
-  }
-
   /* Smooth scrolling for all scrollable elements */
   * {
     scroll-behavior: smooth;
-  }
-
-  /* Enhanced focus styles */
-  *:focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
-    border-radius: calc(var(--radius) / 2);
-  }
-
-  /* Better selection colors */
-  ::selection {
-    background-color: var(--color-primary);
-    color: var(--color-primary-foreground);
-  }
-
-  /* Enhanced hover effects */
-  .hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Modern glassmorphism effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .dark .glass {
-    background: rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  /* Enhanced card shadows */
-  .card-shadow {
-    box-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.05),
-      0 1px 2px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .card-shadow {
-    box-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.3),
-      0 1px 2px rgba(0, 0, 0, 0.4);
-  }
-
-  /* Loading skeleton animation */
-  .skeleton {
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    background-size: 200px 100%;
-    background-repeat: no-repeat;
-    animation: loading 1.5s ease-in-out infinite;
-  }
-
-  @keyframes loading {
-    0% {
-      background-position: -200px 0;
-    }
-    100% {
-      background-position: calc(200px + 100%) 0;
-    }
   }
 
   /* Modern scrollbar styling */
@@ -312,6 +209,7 @@ html {
   ::-webkit-scrollbar-thumb {
     background: var(--color-muted);
     border-radius: 4px;
+    transition: background-color 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -322,5 +220,23 @@ html {
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--color-muted) transparent;
+  }
+
+  /* Chat scroll area enhancements */
+  .chat-scroll-area {
+    scroll-behavior: smooth;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
   }
 }
