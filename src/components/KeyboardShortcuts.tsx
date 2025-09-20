@@ -21,13 +21,15 @@ interface KeyboardShortcutsProps {
   onSwitchToUpload?: () => void;
   onSwitchToDocuments?: () => void;
   onFocusSearch?: () => void;
+  hasDocuments?: boolean;
 }
 
 export function KeyboardShortcuts({ 
   onSwitchToChat, 
   onSwitchToUpload, 
   onSwitchToDocuments,
-  onFocusSearch 
+  onFocusSearch,
+  hasDocuments = false
 }: KeyboardShortcutsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,11 +44,11 @@ export function KeyboardShortcuts({
       description: 'Switch to Chat tab',
       action: onSwitchToChat
     },
-    {
+    ...(hasDocuments ? [{
       keys: ['Ctrl', '3'],
       description: 'Switch to Documents tab',
       action: onSwitchToDocuments
-    },
+    }] : []),
     {
       keys: ['Ctrl', '/'],
       description: 'Show keyboard shortcuts',
@@ -85,8 +87,10 @@ export function KeyboardShortcuts({
             onSwitchToChat?.();
             break;
           case '3':
-            event.preventDefault();
-            onSwitchToDocuments?.();
+            if (hasDocuments) {
+              event.preventDefault();
+              onSwitchToDocuments?.();
+            }
             break;
           case '/':
             event.preventDefault();

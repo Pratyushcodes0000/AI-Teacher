@@ -140,11 +140,11 @@ export function ChatInterface({ messages, onSendMessage, isProcessing, hasDocume
   };
 
   return (
-    <div className="flex flex-col h-full relative">
-      <div className="flex-1 p-4">
+    <div className="flex flex-col h-full relative min-h-0">
+      <div className="flex-1 min-h-0 p-4">
         <div 
           ref={scrollContainerRef}
-          className="h-full overflow-y-auto chat-scroll-area"
+          className="h-full overflow-y-auto overflow-x-hidden chat-scroll-area"
         >
           <div className="space-y-4 pb-4">
             {messages.length === 0 ? (

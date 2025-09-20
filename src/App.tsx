@@ -139,6 +139,9 @@ export default function App() {
       return;
     }
     
+    // Track if this is the first document upload
+    const isFirstUpload = documents.length === 0;
+    
     // Jump to chat to show processing
     setCurrentTab('chat');
     
@@ -255,10 +258,17 @@ export default function App() {
         const readyMsg: Message = {
           id: Math.random().toString(36).substr(2, 9),
           type: 'assistant',
-          content: `🎉 **${file.name}** is now ready for questions!\n\n✨ **Advanced Text Processing** - I can now answer questions based on the content extracted from your document using intelligent local processing.\n\nYou can ask me anything about this document. Try questions like:\n• "What are the main findings?"\n• "Summarize the key points"\n• "What methodology was used?"\n• "Define [specific term from document]"\n\nWhat would you like to know?`,
+          content: `🎉 **${file.name}** is now ready for questions!\n\n✨ **Advanced Text Processing** - I can now answer questions based on the content extracted from your document using intelligent local processing.\n\nYou can ask me anything about this document. Try questions like:\n• "What are the main findings?"\n• "Summarize the key points"\n• "What methodology was used?"\n• "Define [specific term from document]"\n\n${isFirstUpload ? '📚 **New!** Check out the Documents tab to explore your uploaded files.\n\n' : ''}What would you like to know?`,
           timestamp: new Date(),
         };
         setMessages(prev => [...prev, readyMsg]);
+        
+        // Auto-switch to documents tab after first successful upload
+        if (isFirstUpload) {
+          setTimeout(() => {
+            setCurrentTab('documents');
+          }, 2000);
+        }
       }
     }
   }, []);
@@ -268,12 +278,18 @@ export default function App() {
     if (result.error) {
       setError(`Failed to delete document: ${result.error}`);
     } else {
-      setDocuments(docs => docs.filter(doc => doc.id !== id));
+      const updatedDocs = documents.filter(doc => doc.id !== id);
+      setDocuments(updatedDocs);
       if (selectedDocument === id) {
         setSelectedDocument(undefined);
       }
+      
+      // If we're on the documents tab and no documents remain, switch to upload
+      if (updatedDocs.length === 0 && currentTab === 'documents') {
+        setCurrentTab('upload');
+      }
     }
-  }, [selectedDocument]);
+  }, [selectedDocument, documents, currentTab]);
 
   const handleSendMessage = useCallback(async (content: string) => {
     setError(null);
@@ -492,6 +508,7 @@ export default function App() {
                     searchInput.focus();
                   }
                 }}
+                hasDocuments={documents.length > 0}
               />
               <ThemeToggle />
               {authState.user && (
@@ -513,12 +530,12 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="h-full flex flex-col">
             {/* Tab Navigation */}
-            <div className="border-b">
+            <div className="border-b flex-shrink-0">
               <div className="px-6 py-2">
-                <TabsList className="grid w-full max-w-md grid-cols-3">
+                <TabsList className={`grid w-full max-w-md ${documents.length > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                   <TabsTrigger value="upload" className="flex items-center gap-2">
                     <Upload className="h-4 w-4" />
                     <span className="hidden sm:inline">Upload</span>
@@ -527,101 +544,162 @@ export default function App() {
                     <MessageSquare className="h-4 w-4" />
                     <span className="hidden sm:inline">Chat</span>
                   </TabsTrigger>
-                  <TabsTrigger value="documents" className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span className="hidden sm:inline">Documents</span>
-                  </TabsTrigger>
+                  {documents.length > 0 && (
+                    <TabsTrigger value="documents" className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      <span className="hidden sm:inline">Documents</span>
+                    </TabsTrigger>
+                  )}
                 </TabsList>
               </div>
             </div>
 
-            {/* Tab Content */}
-            <div className="flex-1 overflow-hidden">
+            {/* Tab Content - Scrollable Main Content */}
+            <div className="flex-1 min-h-0">
               <TabsContent value="upload" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
-                <div className="flex-1 p-8">
-                  <div className="max-w-3xl mx-auto">
-                    <div className="text-center mb-8">
-                      <h2 className="text-2xl font-semibold mb-4">Upload Your Research Documents</h2>
-                      <p className="text-muted-foreground max-w-2xl mx-auto">
-                        Upload PDF files to start asking questions and getting insights from your academic materials.
-                      </p>
+                <div className="flex-1 main-content-scroll">
+                  <div className="p-8">
+                    <div className="max-w-3xl mx-auto">
+                      <div className="text-center mb-8">
+                        <h2 className="text-2xl font-semibold mb-4">Upload Your Research Documents</h2>
+                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                          Upload PDF files to start asking questions and getting insights from your academic materials.
+                        </p>
+                      </div>
+                      
+                      <DocumentUploader
+                        documents={documents}
+                        onUpload={handleUpload}
+                        onRemove={handleRemoveDocument}
+                      />
                     </div>
-                    
-                    <DocumentUploader
-                      documents={documents}
-                      onUpload={handleUpload}
-                      onRemove={handleRemoveDocument}
-                    />
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="chat" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
-                <ChatInterface
-                  messages={messages}
-                  onSendMessage={handleSendMessage}
-                  isProcessing={isProcessing}
-                  hasDocuments={documents.length > 0}
-                />
+                <div className="flex-1 flex flex-col min-h-0">
+                  <ChatInterface
+                    messages={messages}
+                    onSendMessage={handleSendMessage}
+                    isProcessing={isProcessing}
+                    hasDocuments={documents.length > 0}
+                  />
+                </div>
               </TabsContent>
 
-              <TabsContent value="documents" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
-                <DocumentViewer
-                  documents={documents}
-                  selectedDocument={selectedDocument}
-                  onSelectDocument={setSelectedDocument}
-                />
-              </TabsContent>
+              {documents.length > 0 && (
+                <TabsContent value="documents" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                  <div className="flex-1 main-content-scroll">
+                    <DocumentViewer
+                      documents={documents}
+                      selectedDocument={selectedDocument}
+                      onSelectDocument={setSelectedDocument}
+                    />
+                  </div>
+                </TabsContent>
+              )}
             </div>
           </Tabs>
         </div>
 
-        {/* Sidebar */}
-        {documents.length > 0 && (
-          <div className="w-80 border-l bg-card flex flex-col">
-            <div className="p-4 border-b">
-              <h3 className="font-medium text-sm text-muted-foreground">Workspace</h3>
-            </div>
+        {/* Fixed Workspace Sidebar - Always Visible */}
+        <div className="workspace-sidebar border-l bg-card flex flex-col">
+          <div className="p-4 border-b flex-shrink-0">
+            <h3 className="font-medium text-sm text-muted-foreground">Workspace</h3>
+          </div>
+          
+          <div className="flex-1 workspace-sidebar-content p-4 space-y-6 min-h-0">
+            {/* Usage Indicator */}
+            {authState.user && usageStats && remainingUsage && (
+              <UsageIndicator
+                currentUsage={{
+                  documents: usageStats.documentsProcessed,
+                  questions: usageStats.questionsAsked
+                }}
+                remaining={remainingUsage}
+                planType={usageStats.planType}
+                onUpgradeClick={() => {
+                  setUpgradeTrigger('feature');
+                  setShowUpgradePrompt(true);
+                }}
+              />
+            )}
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-              {/* Usage Indicator */}
-              {authState.user && usageStats && remainingUsage && (
-                <UsageIndicator
-                  currentUsage={{
-                    documents: usageStats.documentsProcessed,
-                    questions: usageStats.questionsAsked
-                  }}
-                  remaining={remainingUsage}
-                  planType={usageStats.planType}
-                  onUpgradeClick={() => {
-                    setUpgradeTrigger('feature');
-                    setShowUpgradePrompt(true);
-                  }}
-                />
-              )}
-              
-              {/* Document Stats */}
+            {/* Document Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">
+                  {documents.length > 0 ? 'Document Statistics' : 'Getting Started'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {documents.length > 0 ? (
+                  <DocumentStats documents={documents} messages={messages} />
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Welcome to your AI Academic Assistant! Get started by:
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2 text-sm">
+                        <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs">1</span>
+                        <span>Upload PDF documents</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs">2</span>
+                        <span>Ask questions about your content</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs">3</span>
+                        <span>Get AI-powered insights</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            {/* Dynamic FAQ */}
+            <DynamicFAQ 
+              onAskQuestion={(question) => {
+                setCurrentTab('chat');
+                handleSendMessage(question);
+              }}
+              hasDocuments={readyDocs.length > 0}
+              documentCount={readyDocs.length}
+            />
+
+            {/* Quick Actions when no documents */}
+            {documents.length === 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Document Statistics</CardTitle>
+                  <CardTitle className="text-sm">Quick Actions</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <DocumentStats documents={documents} messages={messages} />
+                <CardContent className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => setCurrentTab('upload')}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Documents
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => setCurrentTab('chat')}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Try Sample Questions
+                  </Button>
                 </CardContent>
               </Card>
-              
-              {/* Dynamic FAQ */}
-              <DynamicFAQ 
-                onAskQuestion={(question) => {
-                  setCurrentTab('chat');
-                  handleSendMessage(question);
-                }}
-                hasDocuments={readyDocs.length > 0}
-                documentCount={readyDocs.length}
-              />
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Plan Upgrade Prompt */}

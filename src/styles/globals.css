@@ -225,18 +225,122 @@ html {
   /* Chat scroll area enhancements */
   .chat-scroll-area {
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
   }
 
   .chat-scroll-area::-webkit-scrollbar {
     width: 6px;
   }
 
+  .chat-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   .chat-scroll-area::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 3px;
+    transition: background-color 0.2s ease;
   }
 
   .chat-scroll-area::-webkit-scrollbar-thumb:hover {
     background: var(--color-muted-foreground);
+  }
+
+  /* Enhanced flex layouts for proper height constraints */
+  .flex-1-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Tab content scrolling */
+  .tab-content-scroll {
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted) transparent;
+  }
+
+  .tab-content-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .tab-content-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 3px;
+  }
+
+  .tab-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+  }
+
+  /* Main content area scrolling */
+  .main-content-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted) transparent;
+  }
+
+  .main-content-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .main-content-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .main-content-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  .main-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+  }
+
+  /* Fixed sidebar styling */
+  .workspace-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .workspace-sidebar-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  .workspace-sidebar-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .workspace-sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .workspace-sidebar-content::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  .workspace-sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+  }
+
+  /* Ensure proper overflow handling */
+  .overflow-scroll-y {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Fix height calculation issues */
+  .min-h-0 {
+    min-height: 0;
   }
 }
